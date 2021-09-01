@@ -21,6 +21,7 @@ describe.only('UserService', () => {
     findOne: jest.fn(),
     insert: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -89,6 +90,22 @@ describe.only('UserService', () => {
       expect(service.edit(1, users[1])).rejects.toThrow(
         InternalServerErrorException,
       );
+    });
+  });
+
+  describe('Delete', () => {
+    it('Should deleted user', async () => {
+      mockRepository.findOne.mockReturnValue(users[0]);
+
+      expect(await service.delete(1)).toEqual({
+        message: 'Usuário deletado com sucesso',
+      });
+    });
+
+    it('Should not delete user', () => {
+      mockRepository.findOne.mockReturnValue(undefined);
+
+      expect(service.delete(1)).rejects.toThrow(NotFoundException);
     });
   });
 });
