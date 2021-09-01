@@ -39,4 +39,24 @@ export class UserService {
 
     return userValidate;
   }
+
+  async edit(id_user: number, user: IUser) {
+    const userValidateById = await this.userRepository.findOne(id_user);
+
+    if (!userValidateById)
+      throw new NotFoundException({ message: 'Usuário não encontrado' });
+
+    const userValidateByUsername = await this.userRepository.findOne({
+      username: user.username,
+    });
+
+    if (userValidateByUsername)
+      throw new InternalServerErrorException({
+        message: 'Este nome de usuário já está em uso',
+      });
+
+    await this.userRepository.update(id_user, { username: user.username });
+
+    return await this.userRepository.findOne(id_user);
+  }
 }
