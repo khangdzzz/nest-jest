@@ -1,18 +1,50 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from './entity/user.entity';
 import { UserService } from './user.service';
 
-describe('UserService', () => {
+describe.only('UserService', () => {
   let service: UserService;
+
+  const users = [
+    { username: 'a' },
+    { username: 'b' },
+    { username: 'c' },
+    { username: null },
+  ];
+
+  const mockRepository = {
+    findOne: jest.fn(),
+    insert: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService],
+      providers: [
+        UserService,
+        { provide: getRepositoryToken(User), useValue: mockRepository },
+      ],
     }).compile();
 
     service = module.get<UserService>(UserService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('Save', () => {
+    it('Should save user', async () => {
+      mockRepository.findOne
+        .mockReturnValueOnce(undefined)
+        .mockReturnValue(users[0]);
+
+      expect(await service.save(users[0])).toEqual(users[0]);
+    });
+
+    it('Should not save user', async () => {
+      mockRepository.findOne.mockReturnValue(users[0]);
+
+      expect(service.save(users[0])).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
   });
 });
