@@ -1,4 +1,7 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
@@ -45,6 +48,19 @@ describe.only('UserService', () => {
       expect(service.save(users[0])).rejects.toThrow(
         InternalServerErrorException,
       );
+    });
+  });
+
+  describe('Find by username', () => {
+    it('Should return user by username', async () => {
+      mockRepository.findOne.mockReturnValue(users[0]);
+
+      expect(await service.findByUsername('a')).toEqual(users[0]);
+    });
+
+    it('Should not return user', () => {
+      mockRepository.findOne.mockReturnValue(undefined);
+      expect(service.findByUsername('a')).rejects.toThrow(NotFoundException);
     });
   });
 });
