@@ -20,6 +20,7 @@ describe.only('UserService', () => {
   const mockRepository = {
     findOne: jest.fn(),
     insert: jest.fn(),
+    update: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -61,6 +62,33 @@ describe.only('UserService', () => {
     it('Should not return user', () => {
       mockRepository.findOne.mockReturnValue(undefined);
       expect(service.findByUsername('a')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('Edit', () => {
+    it('Should return user edited', async () => {
+      mockRepository.findOne
+        .mockReturnValueOnce(users[0])
+        .mockReturnValueOnce(undefined)
+        .mockReturnValue({ username: 'b' });
+
+      expect(await service.edit(1, users[1])).toEqual(users[1]);
+    });
+
+    it('Should not return user edited', () => {
+      mockRepository.findOne.mockReturnValue(undefined);
+
+      expect(service.edit(1, users[0])).rejects.toThrow(NotFoundException);
+    });
+
+    it('Should not return user edited', () => {
+      mockRepository.findOne
+        .mockReturnValueOnce(users[0])
+        .mockReturnValue(users[1]);
+
+      expect(service.edit(1, users[1])).rejects.toThrow(
+        InternalServerErrorException,
+      );
     });
   });
 });
