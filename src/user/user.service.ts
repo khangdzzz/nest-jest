@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
@@ -23,5 +27,16 @@ export class UserService {
     await this.userRepository.insert(user);
 
     return await this.userRepository.findOne({ username: user.username });
+  }
+
+  async findByUsername(username: string) {
+    const userValidate = await this.userRepository.findOne({
+      username: username,
+    });
+
+    if (!userValidate)
+      throw new NotFoundException({ message: 'Usuário não encontrado' });
+
+    return userValidate;
   }
 }
